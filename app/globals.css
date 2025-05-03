@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply text-gray-600 hover:text-indigo-600 font-medium transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium;
+  }
+  
+  .btn-danger {
+    @apply bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors font-medium;
+  }
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+} 
