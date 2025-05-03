@@ -80,11 +80,12 @@ export default function Login() {
             </button>
           </div>
         </form>
-        <div className="text-sm text-center">
-          <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Don't have an account? Register
+        <p className="mt-4 text-center text-gray-600">
+          Don&apos;t have an account?{' '}
+          <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-700">
+            Register here
           </Link>
-        </div>
+        </p>
       </div>
     </div>
   );

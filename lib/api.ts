@@ -5,6 +5,11 @@ interface ApiResponse<T> {
   error?: string;
 }
 
+interface ApiError {
+  message: string;
+  status?: number;
+}
+
 async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -19,7 +24,11 @@ async function fetchApi<T>(
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const error: ApiError = {
+        message: 'API request failed',
+        status: response.status,
+      };
+      throw error;
     }
 
     const data = await response.json();
