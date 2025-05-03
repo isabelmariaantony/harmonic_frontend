@@ -1,5 +1,14 @@
 const API_BASE_URL = 'http://localhost:3001/api';
 
+interface ProgressData {
+  score?: number;
+  completion_time?: number;
+  attempts?: number;
+  correct_answers?: number;
+  total_questions?: number;
+  [key: string]: number | undefined;
+}
+
 interface ApiResponse<T> {
   data?: T;
   error?: string;
@@ -83,7 +92,7 @@ export const api = {
   updateUserProgress: (progressData: {
     resource_id?: number;
     exercise_id?: number;
-    progress_data: Record<string, any>;
+    progress_data: ProgressData;
   }) =>
     fetchApi('/user-progress', {
       method: 'POST',
