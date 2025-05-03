@@ -23,8 +23,11 @@ async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
+  const fullUrl = `${API_BASE_URL}${endpoint}`;
+  console.log('Making API request to:', fullUrl);
+  
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(fullUrl, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -49,11 +52,13 @@ async function fetchApi<T>(
 
 export const api = {
   // Auth endpoints
-  login: (email: string, password: string) =>
-    fetchApi('/auth/login', {
+  login: (email: string, password: string) => {
+    console.log('Login request - Full URL:', `${API_BASE_URL}/auth/login`);
+    return fetchApi('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
-    }),
+    });
+  },
 
   register: (userData: {
     name: string;
