@@ -98,6 +98,10 @@ export const api = {
       body: JSON.stringify(userData),
     }),
 
+  getProfile: async () => {
+    return fetchApi<User>('/auth/profile');
+  },
+
   // Admin endpoints
   getUsers: async (params: { role?: string; isApproved?: boolean } = {}) => {
     const queryParams = new URLSearchParams();

@@ -32,11 +32,22 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const daysOfWeek = [
+    { key: 'monday', label: 'Monday' },
+    { key: 'tuesday', label: 'Tuesday' },
+    { key: 'wednesday', label: 'Wednesday' },
+    { key: 'thursday', label: 'Thursday' },
+    { key: 'friday', label: 'Friday' },
+    { key: 'saturday', label: 'Saturday' },
+    { key: 'sunday', label: 'Sunday' }
+  ];
+
   useEffect(() => {
     if (user) {
+      console.log('User data:', user); // Debug log
       setFormData({
         name: user.name || '',
-        skills: user.skills || [],
+        skills: Array.isArray(user.skills) ? user.skills : [],
         availability: user.availability || {
           monday: false,
           tuesday: false,
@@ -85,6 +96,7 @@ export default function ProfilePage() {
 
     try {
       const response = await api.updateProfile(formData);
+      console.log('Update response:', response); // Debug log
       
       if (response.error) {
         setError(response.error);
@@ -158,6 +170,9 @@ export default function ProfilePage() {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 placeholder="e.g., Math, Science, English"
               />
+              <p className="mt-1 text-sm text-gray-500">
+                Current skills: {formData.skills.length > 0 ? formData.skills.join(', ') : 'None'}
+              </p>
             </div>
 
             <div>
@@ -165,21 +180,28 @@ export default function ProfilePage() {
                 Availability
               </label>
               <div className="grid grid-cols-2 gap-4">
-                {Object.entries(formData.availability).map(([day, isAvailable]) => (
-                  <div key={day} className="flex items-center">
+                {daysOfWeek.map((day) => (
+                  <div key={day.key} className="flex items-center">
                     <input
                       type="checkbox"
-                      id={day}
-                      checked={isAvailable}
-                      onChange={() => handleAvailabilityChange(day)}
+                      id={day.key}
+                      checked={formData.availability[day.key]}
+                      onChange={() => handleAvailabilityChange(day.key)}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <label htmlFor={day} className="ml-2 block text-sm text-gray-900">
-                      {day.charAt(0).toUpperCase() + day.slice(1)}
+                    <label htmlFor={day.key} className="ml-2 block text-sm text-gray-900">
+                      {day.label}
                     </label>
                   </div>
                 ))}
               </div>
+              <p className="mt-2 text-sm text-gray-500">
+                Current availability: {Object.entries(formData.availability)
+                  .filter(([_, isAvailable]) => isAvailable)
+                  .map(([day]) => daysOfWeek.find(d => d.key === day)?.label)
+                  .filter(Boolean)
+                  .join(', ') || 'None'}
+              </p>
             </div>
 
             <div className="flex justify-end">

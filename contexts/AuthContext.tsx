@@ -57,8 +57,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (result.data) {
         const authResponse = result.data as AuthResponse;
         console.log('Setting user:', authResponse.user);
-        setUser(authResponse.user);
+        
+        // Store the token
         localStorage.setItem('token', authResponse.token);
+        
+        // Fetch complete profile data
+        try {
+          const profileResponse = await api.getProfile();
+          if (profileResponse.data) {
+            console.log('Complete profile data:', profileResponse.data);
+            setUser(profileResponse.data);
+          } else {
+            setUser(authResponse.user);
+          }
+        } catch (profileError) {
+          console.error('Error fetching profile:', profileError);
+          setUser(authResponse.user);
+        }
+        
         return {};
       }
       
