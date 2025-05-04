@@ -7,7 +7,7 @@ import { User, AuthResponse } from '@/types';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ error?: string; isPendingApproval?: boolean }>;
   register: (userData: { name: string; email: string; password: string; role: string }) => Promise<void>;
   logout: () => void;
 }
@@ -43,20 +43,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       console.log('Attempting login...');
-      const response = await api.login(email, password);
-      console.log('Login response:', response);
-      if (response.error) {
-        throw new Error(response.error);
+      const result = await api.login(email, password);
+      console.log('Login result:', result);
+      
+      if (result.error) {
+        if (result.isPendingApproval) {
+          return { error: result.error, isPendingApproval: true };
+        }
+        return { error: result.error };
       }
-      if (response.data) {
-        const authResponse = response.data as AuthResponse;
+      
+      if (result.data) {
+        const authResponse = result.data as AuthResponse;
         console.log('Setting user:', authResponse.user);
         setUser(authResponse.user);
         localStorage.setItem('token', authResponse.token);
+        return {};
       }
+      
+      return { error: 'Login failed' };
     } catch (error) {
       console.error('Login failed:', error);
-      throw error;
+      return { error: error instanceof Error ? error.message : 'Login failed' };
     }
   };
 
@@ -67,12 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Registration response:', response);
       if (response.error) {
         throw new Error(response.error);
-      }
-      if (response.data) {
-        const authResponse = response.data as AuthResponse;
-        console.log('Setting user:', authResponse.user);
-        setUser(authResponse.user);
-        localStorage.setItem('token', authResponse.token);
       }
     } catch (error) {
       console.error('Registration failed:', error);

@@ -9,18 +9,59 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isPendingApproval, setIsPendingApproval] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setIsPendingApproval(false);
+
     try {
-      await login(email, password);
-      router.push('/dashboard');
+      const result = await login(email, password);
+      console.log('Login result:', result);
+      
+      if (result.error) {
+        if (result.isPendingApproval) {
+          setIsPendingApproval(true);
+        } else {
+          setError(result.error);
+        }
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      console.error('Login error:', err);
+      setError('An unexpected error occurred. Please try again.');
     }
   };
+
+  if (isPendingApproval) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Account Pending Approval
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Your account is pending approval by an administrator.
+              You will be notified via email when your account is approved.
+            </p>
+          </div>
+          <div className="text-center">
+            <Link
+              href="/"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Return to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -32,17 +73,17 @@ export default function Login() {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
             </div>
           )}
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email-address" className="sr-only">
+              <label htmlFor="email" className="sr-only">
                 Email address
               </label>
               <input
-                id="email-address"
+                id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -79,13 +120,16 @@ export default function Login() {
               Sign in
             </button>
           </div>
+
+          <div className="text-sm text-center">
+            <Link
+              href="/auth/register"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Don't have an account? Register
+            </Link>
+          </div>
         </form>
-        <p className="mt-4 text-center text-gray-600">
-          Don&apos;t have an account?{' '}
-          <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-700">
-            Register here
-          </Link>
-        </p>
       </div>
     </div>
   );

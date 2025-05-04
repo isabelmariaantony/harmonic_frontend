@@ -1,4 +1,14 @@
+import { AuthResponse } from '@/types';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  is_approved: boolean;
+}
 
 interface ProgressData {
   score?: number;
@@ -12,6 +22,7 @@ interface ProgressData {
 interface ApiResponse<T> {
   data?: T;
   error?: string;
+  isPendingApproval?: boolean;
 }
 
 interface ApiError {
@@ -19,42 +30,56 @@ interface ApiError {
   status?: number;
 }
 
-async function fetchApi<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
-  const fullUrl = `${API_BASE_URL}${endpoint}`;
-  console.log('Making API request to:', fullUrl);
+interface GetUsersParams {
+  role?: string;
+  isApproved?: boolean;
+}
+
+async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  const url = `${API_BASE_URL}${endpoint}`;
+  console.log('API Request - Full URL:', url);
   
+  // Get token from localStorage
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  console.log('Auth token exists:', !!token);
+  
+  const defaultOptions: RequestInit = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+    credentials: 'include',
+  };
+
   try {
-    const response = await fetch(fullUrl, {
+    const response = await fetch(url, {
+      ...defaultOptions,
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
     });
 
     if (!response.ok) {
-      const error: ApiError = {
-        message: 'API request failed',
-        status: response.status,
-      };
-      throw error;
+      // Handle CORS errors specifically
+      if (response.status === 0) {
+        return { error: 'CORS error: Unable to connect to the server. Please check if the server is running and CORS is properly configured.' };
+      }
+      
+      const errorData = await response.json();
+      return { error: errorData.message || 'Request failed' };
     }
 
     const data = await response.json();
     return { data };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'An error occurred' };
+    console.error('API request failed:', error);
+    return { error: 'An unexpected error occurred' };
   }
 }
 
 export const api = {
   // Auth endpoints
-  login: (email: string, password: string) => {
-    console.log('Login request - Full URL:', `${API_BASE_URL}/auth/login`);
-    return fetchApi('/auth/login', {
+  login: async (email: string, password: string): Promise<ApiResponse<AuthResponse>> => {
+    return fetchApi<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -70,6 +95,34 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(userData),
     }),
+
+  // Admin endpoints
+  getUsers: async (params: { role?: string; isApproved?: boolean } = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.role) queryParams.append('role', params.role);
+    if (params.isApproved !== undefined) queryParams.append('isApproved', params.isApproved.toString());
+    
+    return fetchApi<User[]>(`/admin/users?${queryParams.toString()}`);
+  },
+
+  approveUser: async (userId: number) => {
+    return fetchApi<{ success: boolean }>(`/admin/users/${userId}/approve`, {
+      method: 'POST',
+    });
+  },
+
+  unapproveUser: async (userId: number) => {
+    return fetchApi<{ success: boolean }>(`/admin/users/${userId}/unapprove`, {
+      method: 'POST',
+    });
+  },
+
+  updateUserRole: async (userId: number, role: string) => {
+    return fetchApi<{ success: boolean }>(`/admin/users/${userId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
+  },
 
   // Study sessions endpoints
   getStudySessions: () => fetchApi('/study-sessions'),
