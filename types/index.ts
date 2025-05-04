@@ -1,10 +1,15 @@
 export interface User {
   id: number;
-  name: string;
   email: string;
+  name: string;
   role: string;
-  created_at: string;
-  updated_at: string;
+  is_approved: boolean;
+  skills?: string[];
+  availability?: {
+    [key: string]: boolean;
+  };
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface StudySession {
@@ -50,4 +55,13 @@ export interface UserProgress {
 export interface AuthResponse {
   user: User;
   token: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ error?: string; isPendingApproval?: boolean }>;
+  register: (userData: { name: string; email: string; password: string; role: string }) => Promise<void>;
+  logout: () => void;
+  updateUser: (userData: User) => void;
 } 

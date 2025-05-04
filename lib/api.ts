@@ -158,4 +158,17 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(progressData),
     }),
+
+  updateProfile: async (profileData: {
+    name: string;
+    skills: string[];
+    availability: {
+      [key: string]: boolean;
+    };
+  }) => {
+    return fetchApi<User>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+  },
 }; 
