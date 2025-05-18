@@ -58,6 +58,10 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
     const response = await fetch(url, {
       ...defaultOptions,
       ...options,
+      headers: {
+        ...defaultOptions.headers,
+        ...options.headers,
+      },
     });
 
     if (!response.ok) {
@@ -67,6 +71,9 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
       }
       
       const errorData = await response.json();
+      if (response.status === 403 && errorData.isPendingApproval) {
+        return { error: errorData.message, isPendingApproval: true };
+      }
       return { error: errorData.message || 'Request failed' };
     }
 
