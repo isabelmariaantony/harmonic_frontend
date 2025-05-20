@@ -37,6 +37,22 @@ interface GetUsersParams {
   isApproved?: boolean;
 }
 
+interface Resource {
+  id: number;
+  title: string;
+  description: string;
+  url: string;
+  type: string;
+  created_by: number;
+  approved_by?: number;
+  is_approved: boolean;
+  is_hidden: boolean;
+  creator_name?: string;
+  approver_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const url = `${API_BASE_URL}${endpoint}`;
   console.log('API Request - Full URL:', url);
@@ -151,8 +167,33 @@ export const api = {
     }),
 
   // Resources endpoints
-  getResources: () => fetchApi('/resources'),
-  getResource: (id: number) => fetchApi(`/resources/${id}`),
+  getResources: () => fetchApi<Resource[]>('/resources'),
+  getAllResources: () => fetchApi<Resource[]>('/resources/all'),
+  getResource: (id: number) => fetchApi<Resource>(`/resources/${id}`),
+  createResource: (resourceData: {
+    title: string;
+    description: string;
+    url: string;
+    type: string;
+  }) => fetchApi<Resource>('/resources', {
+    method: 'POST',
+    body: JSON.stringify(resourceData),
+  }),
+  updateResource: (id: number, resourceData: {
+    title: string;
+    description: string;
+    url: string;
+    type: string;
+  }) => fetchApi<Resource>(`/resources/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(resourceData),
+  }),
+  approveResource: (id: number) => fetchApi<Resource>(`/resources/${id}/approve`, {
+    method: 'POST',
+  }),
+  toggleResourceVisibility: (id: number) => fetchApi<Resource>(`/resources/${id}/toggle-visibility`, {
+    method: 'POST',
+  }),
 
   // Memory exercises endpoints
   getMemoryExercises: () => fetchApi('/memory-exercises'),

@@ -29,6 +29,12 @@ export interface Resource {
   description: string;
   url: string;
   type: string;
+  created_by: number;
+  approved_by?: number;
+  is_approved: boolean;
+  is_hidden: boolean;
+  creator_name?: string;
+  approver_name?: string;
   created_at: string;
   updated_at: string;
 }
@@ -53,8 +59,8 @@ export interface UserProgress {
 }
 
 export interface AuthResponse {
-  user: User;
   token: string;
+  user: User;
 }
 
 export interface AuthContextType {
