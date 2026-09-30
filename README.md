@@ -1,6 +1,8 @@
 # Harmonic Frontend
 
-This is the frontend application for the Harmonic learning platform, built with Next.js and TypeScript.
+This is the frontend application for the Harmonic learning platform, built with Next.js and TypeScript.PhonoCare is a machine-learning application developed to detect heart murmurs from phonocardiogram (PCG) audio recordings. This repository contains the frontend interface for the project, to allow users to upload heart-sound audio files and receive the model's classification results.
+
+The frontend connects to the PhonoCare backend, which processes uploaded recordings and runs the trained heart-murmur classification model.
 
 ## Features
 
